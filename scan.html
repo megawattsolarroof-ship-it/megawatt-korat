@@ -414,7 +414,7 @@
           currentLng = pos.coords.longitude;
 
           try {
-            const config = await fetch(API_URL + '?action=getConfig&key=' + encodeURIComponent(APP_KEY)).then(r => r.json());
+            const config = await fetch(API_URL + '?action=getConfig&scope=attendance&key=' + encodeURIComponent(APP_KEY)).then(r => r.json());
 
             if (config.error === 'unauthorized') {
               reject(new Error(config.message || 'App Key ไม่ถูกต้อง'));
