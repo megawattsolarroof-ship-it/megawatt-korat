@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ระบบบันทึกเวลาทำงาน</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#06151D">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="js/api-config.js"></script>
+  <style>
+    :root {
+      --bg: #06151D;
+      --bg-2: #0B222E;
+      --surface: #0B222E;
+      --surface-2: #0E2B36;
+      --border: #144A46;
+      --border-strong: #1E6B65;
+      --accent: #4AF2D7;
+      --accent-2: #3DE0C6;
+      --text: #D1F7F2;
+      --muted: #86ABA6;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Prompt', sans-serif;
+      min-height: 100vh;
+      background: var(--bg);
+      background-image:
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(74, 242, 215, 0.10), transparent 60%),
+        radial-gradient(ellipse 60% 40% at 90% 110%, rgba(30, 107, 101, 0.18), transparent 60%);
+      background-attachment: fixed;
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px 60px;
+      position: relative;
+      overflow-x: hidden;
+      overscroll-behavior-y: none;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+      animation: fadeInDown 0.6s ease;
+    }
+    .logo-icon {
+      font-size: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+      line-height: 1;
+    }
+    .logo-icon img {
+      width: 72px; height: 72px;
+      border-radius: 18px;
+      border: 1px solid var(--border-strong);
+      box-shadow: 0 0 24px rgba(74, 242, 215, 0.35), 0 4px 14px rgba(0, 0, 0, 0.4);
+    }
+    h1 {
+      font-size: 1.6em;
+      font-weight: 700;
+      background: linear-gradient(180deg, #FFFFFF 0%, #D1F7F2 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 6px;
+      letter-spacing: -0.5px;
+      text-shadow: 0 0 30px rgba(74, 242, 215, 0.35);
+    }
+    .subtitle {
+      font-size: 0.9em;
+      color: var(--muted);
+      font-weight: 400;
+    }
+
+    /* Warning */
+    .api-warning {
+      display: none;
+      background: rgba(251, 191, 36, 0.08);
+      border: 1px solid rgba(251, 191, 36, 0.35);
+      color: #fbbf24;
+      border-radius: 12px;
+      padding: 12px 18px;
+      width: 100%;
+      max-width: 380px;
+      margin-bottom: 24px;
+      font-size: 0.9em;
+      font-weight: 500;
+      animation: fadeIn 0.5s ease;
+    }
+    .api-warning a { color: #fcd34d; font-weight: 700; text-decoration: underline; }
+
+    /* Menu Cards */
+    .menu-cards {
+      width: 100%;
+      max-width: 380px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .btn-menu {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 20px 22px;
+      text-decoration: none;
+      border-radius: 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.35);
+      animation: fadeInUp 0.5s ease both;
+    }
+    .btn-menu:nth-child(1) { animation-delay: 0.1s; }
+    .btn-menu:nth-child(2) { animation-delay: 0.2s; }
+    .btn-menu:nth-child(3) { animation-delay: 0.3s; }
+
+    .btn-menu:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 0 25px -2px rgba(74, 242, 215, 0.25), 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+      border-color: var(--accent);
+    }
+
+    .card-icon {
+      width: 54px; height: 54px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      flex-shrink: 0;
+      background: rgba(74, 242, 215, 0.08);
+      color: var(--accent);
+      border: 1px solid rgba(74, 242, 215, 0.25);
+      line-height: 1;
+      padding-bottom: 2px;
+    }
+
+    .card-text { flex: 1; text-align: left; }
+    .card-title { font-size: 1.05em; font-weight: 700; color: #FFFFFF; margin-bottom: 3px; }
+    .card-desc  { font-size: 0.85em; color: var(--muted); font-weight: 400; }
+
+    .card-arrow {
+      font-size: 20px; color: var(--border-strong);
+      transition: transform 0.3s ease, color 0.3s ease;
+    }
+    .btn-menu:hover .card-arrow { transform: translateX(4px); color: var(--accent); }
+
+    /* Custom Scrollbar สำหรับตาราง */
+    .custom-scrollbar::-webkit-scrollbar { height: 8px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: var(--surface); border-radius: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--accent-2); }
+
+    /* Animations */
+    @keyframes fadeIn    { from { opacity: 0; }                     to { opacity: 1; } }
+    @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeInUp  { from { opacity: 0; transform: translateY(20px);  } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="logo-icon"><img src="icons/icon-192.jpg" alt="MEGAwatt Solar"></div>
+    <h1>ระบบบันทึกเวลาทำงาน</h1>
+    <p class="subtitle">MEGAwatt Solar — Face Recognition Time Attendance</p>
+  </div>
+
+  <div id="apiWarning" class="api-warning">
+    ⚠️ ยังไม่ได้ตั้งค่า API —
+    <a href="config.html">ไปตั้งค่าก่อน</a>
+  </div>
+
+  <!-- ส่วนเมนูหลัก -->
+  <div class="menu-cards">
+    <a href="scan.html" class="btn-menu btn-scan">
+      <div class="card-icon">⏰</div>
+      <div class="card-text">
+        <div class="card-title">สแกนเข้า-ออกงาน</div>
+        <div class="card-desc">สแกนครั้งแรก = เข้างาน / ครั้งถัดไป = ออกงาน</div>
+      </div>
+      <span class="card-arrow">›</span>
+    </a>
+
+    <a href="register.html" class="btn-menu btn-register">
+      <div class="card-icon">👤</div>
+      <div class="card-text">
+        <div class="card-title">ลงทะเบียนพนักงาน</div>
+        <div class="card-desc">บันทึกข้อมูลใบหน้าใหม่</div>
+      </div>
+      <span class="card-arrow">›</span>
+    </a>
+
+    <a href="config.html" class="btn-menu btn-config">
+      <div class="card-icon">⚙️</div>
+      <div class="card-text">
+        <div class="card-title">ตั้งค่าระบบ</div>
+        <div class="card-desc">จัดการ GPS และ API (ต้องใส่รหัส)</div>
+      </div>
+      <span class="card-arrow">›</span>
+    </a>
+  </div>
+
+  <!-- ================= ตารางเวลาเข้า-ออกงานวันนี้ ================= -->
+  <div class="w-full max-w-4xl mt-12 space-y-8 animate-[fadeInUp_0.6s_ease_both]">
+
+    <div class="bg-[#0B222E] rounded-xl shadow-[0_0_20px_-5px_rgba(74,242,215,0.2)] border border-[#144A46] overflow-hidden relative">
+      <div class="absolute top-0 left-0 w-1 h-full bg-[#4AF2D7] shadow-[0_0_12px_rgba(74,242,215,0.8)]"></div>
+      <div class="bg-[#0B222E] px-5 py-4 border-b border-[#144A46]">
+        <h3 class="text-[#D1F7F2] font-semibold text-[15px] flex items-center gap-2 flex-wrap">
+          <span class="text-[#4AF2D7] text-lg">⏰</span>
+          เวลาทำงานประจำวันที่
+          <span id="todayDateLabel" class="ml-1 text-[#4AF2D7] font-bold bg-[rgba(74,242,215,0.08)] px-2 py-0.5 rounded-md border border-[#1E6B65]">--/--/----</span>
+        </h3>
+      </div>
+      <div class="overflow-x-auto custom-scrollbar p-0">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-[#0E2B36]">
+              <th class="border-y border-r border-[#144A46] px-2 sm:px-4 py-2 sm:py-3.5 text-[12px] sm:text-[14px] font-semibold text-[#3DE0C6] text-center w-full sm:w-2/5 first:border-l-0">ชื่อพนักงาน</th>
+              <th class="border border-[#144A46] px-1 sm:px-4 py-2 sm:py-3.5 text-[11px] sm:text-[14px] font-semibold text-[#3DE0C6] text-center whitespace-nowrap">เวลาเข้า</th>
+              <th class="border border-[#144A46] px-1 sm:px-4 py-2 sm:py-3.5 text-[11px] sm:text-[14px] font-semibold text-[#3DE0C6] text-center whitespace-nowrap">เวลาออก</th>
+              <th class="border border-[#144A46] px-1 sm:px-4 py-2 sm:py-3.5 text-[11px] sm:text-[14px] font-semibold text-[#3DE0C6] text-center whitespace-nowrap">แผนที่</th>
+              <th class="border-y border-l border-[#144A46] px-1 sm:px-4 py-2 sm:py-3.5 text-[11px] sm:text-[14px] font-semibold text-[#3DE0C6] text-center whitespace-nowrap last:border-r-0">หมายเหตุ</th>
+            </tr>
+          </thead>
+          <tbody id="attendanceBody" class="bg-[#0B222E] text-[#D1F7F2]">
+            <tr>
+              <td colspan="5" class="p-8 text-center">
+                <div class="flex flex-col items-center justify-center text-[#86ABA6] space-y-2">
+                  <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-[#4AF2D7]"></div>
+                  <span class="text-[14px]">กำลังโหลดข้อมูล...</span>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Modal สำหรับหมายเหตุ -->
+  <div id="remarkModal" class="hidden fixed inset-0 z-[9999] bg-[rgba(6,21,29,0.75)] backdrop-blur-sm flex items-center justify-center p-4 transition-opacity">
+    <div class="bg-[#0B222E] border border-[#144A46] rounded-xl shadow-[0_0_35px_-5px_rgba(74,242,215,0.25)] w-full max-w-sm flex flex-col overflow-hidden transform scale-100 transition-transform">
+      <div class="bg-gradient-to-r from-[#0E2B36] to-[#0B222E] px-5 py-3.5 flex justify-between items-center border-b border-[#144A46]">
+        <h3 class="text-[#D1F7F2] font-semibold text-[15px] flex items-center gap-2">
+          <span class="text-[#4AF2D7] text-lg">💬</span> ข้อความหมายเหตุ
+        </h3>
+        <button onclick="closeRemark()" class="text-[#86ABA6] hover:text-[#4AF2D7] transition-colors font-bold p-1 text-xl leading-none outline-none">
+          &times;
+        </button>
+      </div>
+      <div class="p-6 bg-[#0B222E] min-h-[120px] flex items-center justify-center">
+        <p id="remarkModalTextDisplay" class="text-[#D1F7F2] text-[15px] text-center w-full break-words leading-relaxed"></p>
+      </div>
+      <div class="p-4 bg-[#0E2B36] border-t border-[#144A46] flex justify-center">
+        <button onclick="closeRemark()" class="px-6 py-2 bg-[#0B222E] border border-[#1E6B65] hover:border-[#4AF2D7] hover:text-[#4AF2D7] text-[#D1F7F2] font-medium rounded-lg text-[14px] shadow-sm transition-all outline-none">
+          ปิดหน้าต่าง
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts สำหรับการทำงานของ Dashboard -->
+  <script>
+    const GAS_URL = localStorage.getItem('gasApiUrl') || GAS_API_URL;
+    const APP_KEY = localStorage.getItem('appKey') || '';
+
+    // ตั้งค่าหัวข้อวันที่
+    const now = new Date();
+    const dateString = now.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    document.getElementById('todayDateLabel').innerText = dateString;
+
+    // ฟังก์ชันเปิด-ปิด Pop-up หมายเหตุ
+    window.openRemark = function(encodedText) {
+      document.getElementById('remarkModalTextDisplay').innerText = decodeURIComponent(encodedText);
+      document.getElementById('remarkModal').classList.remove('hidden');
+    };
+
+    window.closeRemark = function() {
+      document.getElementById('remarkModal').classList.add('hidden');
+    };
+
+    // แปลงเวลาให้ถูกต้อง
+    function formatTime(timeStr) {
+      if (!timeStr || timeStr === '-') return '-';
+      if (timeStr.includes('T') && timeStr.includes('Z')) {
+        try {
+          const date = new Date(timeStr);
+          return `${date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Bangkok' })} น.`;
+        } catch(e) { return timeStr; }
+      }
+      if (typeof timeStr === 'string' && timeStr.includes(':')) {
+        const parts = timeStr.split(':');
+        if (parts.length >= 2) return `${parts[0]}:${parts[1]} น.`;
+      }
+      return timeStr;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function safeExternalUrl(value) {
+      try {
+        const url = new URL(String(value || ''));
+        return ['http:', 'https:'].includes(url.protocol) ? url.toString() : '';
+      } catch {
+        return '';
+      }
+    }
+
+    async function loadTodayData() {
+      try {
+        const keyQS = '&key=' + encodeURIComponent(APP_KEY);
+        const res = await fetch(GAS_URL + "?action=getTodayAttendance" + keyQS);
+        const data = await res.json();
+        renderTable('attendanceBody', data);
+      } catch (e) {
+        console.error("Load Error:", e);
+        document.getElementById('attendanceBody').innerHTML = `<tr><td colspan="5" class="p-6 text-center text-red-400 text-[14px]">เกิดข้อผิดพลาดในการโหลดข้อมูล</td></tr>`;
+      }
+    }
+
+    function renderTable(elementId, data) {
+      const body = document.getElementById(elementId);
+      const colSpan = 5;
+
+      if (data && data.error === 'unauthorized') {
+        body.innerHTML = `<tr><td colspan="${colSpan}" class="p-8 text-center text-amber-400 text-[14px]">🔒 ${escapeHtml(data.message || 'App Key ไม่ถูกต้อง')} — <a href="config.html" class="underline font-semibold">ไปตั้งค่า</a></td></tr>`;
+        return;
+      }
+      if (!data || !Array.isArray(data) || data.length === 0) {
+        body.innerHTML = `<tr><td colspan="${colSpan}" class="p-8 text-center text-[#86ABA6] text-[14px]">ไม่มีข้อมูลวันนี้</td></tr>`;
+        return;
+      }
+
+      body.innerHTML = data.map(row => {
+        const timeIn  = escapeHtml(formatTime(row['เวลาเข้า']));
+        const timeOut = escapeHtml(formatTime(row['เวลาออก']));
+
+        const mapUrl = safeExternalUrl(row['Google Map Link']);
+        const linkColor = 'text-[#3DE0C6]';
+
+        const mapLink = mapUrl
+          ? `<a href="${escapeHtml(mapUrl)}" target="_blank" rel="noopener noreferrer" class="${linkColor} text-[11px] sm:text-[14px] underline decoration-1 underline-offset-4">ดูพิกัด</a>`
+          : `<span class="text-[#3D5A57]">-</span>`;
+
+        const rawRemark = row['หมายเหตุ'] || '';
+        const safeRemark = encodeURIComponent(rawRemark).replace(/'/g, "%27");
+        const remarkBtn = rawRemark.trim() !== ''
+          ? `<button onclick="openRemark('${safeRemark}')" class="${linkColor} text-[11px] sm:text-[14px] underline decoration-1 underline-offset-4">ดูหมายเหตุ</button>`
+          : `<span class="text-[#3D5A57]">-</span>`;
+
+        return `
+          <tr class="hover:bg-[#0E2B36]">
+            <td class="border-y border-r border-[#144A46] px-2 py-2 text-[12px] sm:text-[14px] font-medium">${escapeHtml(row['ชื่อ'] || '-')}</td>
+            <td class="border border-[#144A46] px-1 py-2 text-[11px] sm:text-[14px] text-center text-[#4AF2D7] font-semibold">${timeIn}</td>
+            <td class="border border-[#144A46] px-1 py-2 text-[11px] sm:text-[14px] text-center">${timeOut}</td>
+            <td class="border border-[#144A46] px-1 py-2 text-center">${mapLink}</td>
+            <td class="border-y border-l border-[#144A46] px-1 py-2 text-center">${remarkBtn}</td>
+          </tr>`;
+      }).join('');
+    }
+
+    if (!GAS_URL) {
+      document.getElementById('apiWarning').style.display = 'block';
+      document.getElementById('attendanceBody').innerHTML = `<tr><td colspan="5" class="p-8 text-center text-[#86ABA6] text-[14px]">ยังไม่ได้ตั้งค่า API</td></tr>`;
+    } else {
+      loadTodayData();
+      setInterval(() => {
+        if (!document.hidden) loadTodayData();
+      }, 60000);
+    }
+  </script>
+</body>
+</html>
