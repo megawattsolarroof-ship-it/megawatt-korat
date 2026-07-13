@@ -1,6 +1,6 @@
 {
-  "name": "MEGAwatt Solar — บันทึกเวลาทำงาน",
-  "short_name": "MEGAwatt Time",
+  "name": "MEGAwatt Raikhing — บันทึกเวลาทำงาน",
+  "short_name": "MEGAwatt Raikhing",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
