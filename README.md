@@ -1,4 +1,4 @@
-# MEGAwatt Raikhing — ระบบบันทึกเวลาทำงาน (Time Attendance)
+# MEGAwatt Korat — ระบบบันทึกเวลาทำงาน (Time Attendance)
 
 เว็บแอปสแกนใบหน้าบันทึกเวลา **เข้า-ออกงาน** สไตล์ Tech & Cyberpunk (โทน Teal/Cyan บนพื้นเข้ม)
 
